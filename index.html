@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #1a237e; --accent: #ffd600; --bg: #f0f2f5; }
+        :root { --primary: #1a237e; --accent: #ffd600; --bg: #f0f2f5; --gold: #FFD700; --silver: #C0C0C0; --bronze: #CD7F32; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; overflow: hidden; }
         #dashboard-main { display: flex; height: 100vh; }
         .sidebar { width: 280px; background: var(--primary); color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 10; }
@@ -19,45 +19,46 @@
         .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.1); color: var(--accent); border-left: 5px solid var(--accent); }
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .top-bar { background: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .ann-box { background: #fffde7; padding: 15px; margin: 20px; border-radius: 12px; border-left: 5px solid var(--accent); display: flex; gap: 10px; }
+        .ann-box { background: #fffde7; padding: 15px; margin: 20px; border-radius: 12px; border-left: 5px solid var(--accent); display: flex; gap: 10px; flex-wrap: wrap; }
         .content-body { padding: 0 25px 25px 25px; overflow-y: auto; flex: 1; }
         .data-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .data-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f0f0f0; align-items: center; }
-        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 10000; }
-        .toast { background: var(--primary); color: white; padding: 15px; border-radius: 12px; margin-top: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: slideIn 0.5s; min-width: 200px; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 300px; text-align: center; color: #333; }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .rank-badge { width: 25px; height: 25px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 11px; }
+        .rank-1 { background: var(--gold); } .rank-2 { background: var(--silver); } .rank-3 { background: var(--bronze); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 300px; text-align: center; }
     </style>
 </head>
 <body>
-
-    <div id="toast-container"></div>
-
     <div id="login-overlay">
         <h1>APNA COMPUTER PATHSHALA</h1>
         <div class="login-box">
             <h2>Admin Login</h2>
             <input type="password" id="admin-pass-input" placeholder="पासवर्ड लिखें" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; margin-bottom:15px; text-align:center;">
             <button onclick="checkAdminLogin()" style="width:100%; background:var(--primary); color:white; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">लॉगिन करें</button>
+            <p style="font-size:10px; color:gray; margin-top:15px; cursor:pointer;" onclick="resetToDefault()">पासवर्ड भूल गए? (Reset)</p>
         </div>
     </div>
 
     <div id="dashboard-main" style="display:none;">
         <div class="sidebar" id="sidebar">
-            <div style="padding:40px 15px; text-align:center; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" style="width:70px; border-radius:50%; background:white; padding:5px;">
-                <h3>Suraj Kumar</h3>
-                <p style="color:var(--accent); font-size:12px;">Learner Facilitator</p>
+            <div style="padding:30px 15px; text-align:center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" style="width:60px; border-radius:50%; background:white; padding:5px;">
+                <h3 style="margin:10px 0 5px;">Suraj Kumar</h3>
+                <p style="color:var(--accent); font-size:11px; margin:0;">Learner Facilitator @ Surya Zone</p>
             </div>
             <div class="menu-list">
                 <div class="menu-item active" onclick="switchTab('quizzes', this)"><i class="fas fa-trophy"></i> Leaderboard</div>
                 <div class="menu-item" onclick="switchTab('attendance', this)"><i class="fas fa-user-check"></i> Attendance</div>
                 <div class="menu-item" onclick="switchTab('chats', this)"><i class="fas fa-comments"></i> Live Chat</div>
                 <div class="menu-item" onclick="switchTab('recycle_bin', this)"><i class="fas fa-trash-alt"></i> Recycle Bin</div>
-                <div class="menu-item" onclick="openPassModal()"><i class="fas fa-cog"></i> Settings</div>
+                <div class="menu-item" onclick="openPassModal()"><i class="fas fa-key"></i> Settings</div>
             </div>
-            <div style="margin-top:auto; padding:20px; text-align:center; cursor:pointer; background:rgba(0,0,0,0.2);" onclick="logout()">Logout</div>
+            <div id="online-users-list" style="padding:15px; display:none; background:rgba(0,0,0,0.1); margin:10px; border-radius:10px;">
+                <p style="font-size:10px; color:var(--accent); font-weight:bold; margin-bottom:5px;">LIVE STUDENTS:</p>
+                <div id="user-names-container" style="font-size:11px; color:white; display:flex; flex-direction:column; gap:5px;"></div>
+            </div>
+            <div style="margin-top:auto; padding:15px; text-align:center; cursor:pointer; background:rgba(0,0,0,0.2);" onclick="logout()">Logout</div>
         </div>
 
         <div class="main-content">
@@ -65,20 +66,18 @@
                 <div style="display:flex; align-items:center;">
                     <i class="fas fa-bars" onclick="document.getElementById('sidebar').classList.toggle('hidden')" style="cursor:pointer; font-size:20px;"></i>
                     <h2 id="header-title" style="margin-left:15px; font-size:18px;">Leaderboard</h2>
+                    <div id="live-counter" style="margin-left:15px; background: #4caf50; color: white; padding: 4px 10px; border-radius: 15px; font-size: 11px;">Live: <span id="online-count">0</span></div>
                 </div>
                 <input type="date" id="target-date" onchange="loadData()" style="padding:8px; border-radius:8px; border:1px solid #ddd;">
             </div>
-
             <div class="ann-box">
                 <select id="sir-selector" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
                     <option value="SURAJ SIR">Suraj Sir</option>
                     <option value="GANESH SIR">Ganesh Sir</option>
-                    <option value="ARJUN SIR">Arjun Sir</option>
                 </select>
-                <input type="text" id="ann-input" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" placeholder="रिप्लाई भेजें...">
+                <input type="text" id="ann-input" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" placeholder="संदेश लिखें...">
                 <button style="background:var(--primary); color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;" onclick="sendAnn()">भेजें 📢</button>
             </div>
-
             <div class="content-body">
                 <div class="data-card" id="display-area">डेटा लोड हो रहा है...</div>
             </div>
@@ -87,10 +86,12 @@
 
     <div id="passModal" class="modal">
         <div class="modal-content">
-            <h3>Change Password</h3>
+            <h3 style="margin-top:0;">पासवर्ड बदलें</h3>
             <input type="password" id="new-password" placeholder="नया पासवर्ड" style="width:100%; padding:10px; margin:15px 0; border:1px solid #ddd; border-radius:8px;">
-            <button style="background:var(--primary); color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;" onclick="updatePass()">Save</button>
-            <p onclick="closeModal()" style="cursor:pointer; color:gray; margin-top:10px;">Cancel</p>
+            <div style="display:flex; gap:10px;">
+                <button style="flex:1; background:var(--primary); color:white; padding:10px; border:none; border-radius:8px; cursor:pointer;" onclick="updatePass()">Save</button>
+                <button style="flex:1; background:#ccc; color:black; padding:10px; border:none; border-radius:8px; cursor:pointer;" onclick="closePassModal()">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -98,124 +99,117 @@
     const firebaseConfig = { databaseURL: "https://apnapathshala-73-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
     let mode = 'quizzes';
-    let initialLoad = true;
-    let masterPass = localStorage.getItem('adminPass') || 'Suraj@7070';
-    const alertSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
+    const defaultPass = 'suraj@7070'; // डिफ़ॉल्ट पासवर्ड
 
     window.onload = function() {
-        if(sessionStorage.getItem('isAdminLoggedIn') === 'true') {
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('dashboard-main').style.display = 'flex';
-            setupSystem(); loadData();
-        }
+        if(sessionStorage.getItem('isAdminLoggedIn') === 'true') { showDashboard(); }
     };
 
     function checkAdminLogin() {
         const input = document.getElementById('admin-pass-input').value;
-        if(input === masterPass) {
-            sessionStorage.setItem('isAdminLoggedIn', 'true');
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('dashboard-main').style.display = 'flex';
-            setupSystem(); loadData();
-        } else alert("गलत पासवर्ड!");
+        const currentPass = localStorage.getItem('adminPass') || defaultPass;
+        if(input === currentPass) {
+            sessionStorage.setItem('isAdminLoggedIn', 'true'); showDashboard();
+        } else { alert("गलत पासवर्ड!"); }
     }
 
-    function logout() { sessionStorage.removeItem('isAdminLoggedIn'); location.reload(); }
+    function resetToDefault() {
+        if(prompt("Reset करने के लिए 'surya zone' लिखें:") === 'surya zone') {
+            localStorage.removeItem('adminPass'); alert("पासवर्ड रिसेट होकर '" + defaultPass + "' हो गया है।");
+            location.reload();
+        }
+    }
 
-    function setupSystem() {
-        const today = new Date().toISOString().split('T')[0];
-        db.ref(`chats/${today}`).on('child_added', snap => {
-            if (initialLoad) return; 
-            const data = snap.val();
-            showPopup(data.name, data.message);
-            if(!data.name.includes("SIR")) {
-                alertSound.play().catch(() => {});
-                const speech = new SpeechSynthesisUtterance(`${data.name} का मैसेज है: ${data.message}`);
-                speech.lang = 'hi-IN';
-                window.speechSynthesis.speak(speech);
-            }
+    function showDashboard() {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('dashboard-main').style.display = 'flex';
+        loadData(); startLiveCounter(); autoCleanOldChats();
+    }
+
+    function startLiveCounter() {
+        db.ref('status/online_students').on('value', snap => {
+            const count = snap.numChildren(); document.getElementById('online-count').innerText = count;
+            const list = document.getElementById('user-names-container');
+            const wrapper = document.getElementById('online-users-list');
+            wrapper.style.display = count > 0 ? 'block' : 'none';
+            list.innerHTML = "";
+            snap.forEach(child => {
+                const nameDiv = document.createElement('div');
+                nameDiv.innerHTML = `<i class="fas fa-circle" style="color:#4caf50; font-size:7px; margin-right:5px;"></i> ${child.val().name}`;
+                list.appendChild(nameDiv);
+            });
         });
-        setTimeout(() => initialLoad = false, 1500);
-    }
-
-    function showPopup(name, msg) {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.innerHTML = `<b>${name}:</b><br>${msg}`;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 5000); // 5 सेकंड तक पॉप-अप दिखेगा
     }
 
     function loadData() {
         const date = document.getElementById('target-date').value || new Date().toISOString().split('T')[0];
         document.getElementById('target-date').value = date;
         const area = document.getElementById('display-area');
+        db.ref(`${mode}/${date}`).off(); area.innerHTML = "लोड हो रहा है...";
 
-        db.ref(`${mode}/${date}`).on('value', snap => {
-            area.innerHTML = "";
-            const val = snap.val();
-            if(!val) { area.innerHTML = "कोई डेटा नहीं मिला।"; return; }
+        db.ref(`${mode}/${date}`).once('value', snap => {
+            const val = snap.val(); if(!val) { area.innerHTML = "कोई डेटा नहीं मिला।"; return; }
+            let html = ""; let entries = Object.entries(val);
 
-            Object.entries(val).forEach(([key, data]) => {
-                let name = data.name || key;
-                let info = data.message || (mode === 'attendance' ? "PRESENT ✅" : data.score || "Data");
-                
-                area.innerHTML += `<div class="data-row">
-                    <span><b>${name}:</b> ${info}</span>
+            if(mode === 'quizzes') {
+                entries.sort((a, b) => (b[1].score || 0) - (a[1].score || 0));
+                entries.forEach(([key, d], index) => {
+                    let rIcon = index < 3 ? `<span class="rank-badge rank-${index + 1}">${index + 1}</span>` : "";
+                    html += `<div class="data-row"><span>${rIcon}<b>${d.name || key}:</b> स्कोर: ${d.score || 0}</span>
+                    <div><i class="fas fa-trash-alt" style="color:red; cursor:pointer;" onclick="handleDelete('${key}', ${JSON.stringify(d).replace(/"/g, '&quot;')})"></i></div></div>`;
+                });
+            } else {
+                entries.forEach(([key, d]) => {
+                    // समय (Time) दिखाने वाला लॉजिक यहाँ है
+                    let info = d.message || (mode === 'attendance' ? `<b style='color:green;'>PRESENT ✅</b> (समय: ${d.time || 'N/A'})` : "डेटा");
+                    html += `<div class="data-row"><span><b>${d.name || key}:</b> ${info}</span>
                     <div>
-                        ${mode === 'recycle_bin' ? `<i class="fas fa-undo" style="color:green; cursor:pointer; margin-right:15px;" onclick="restoreData('${key}', ${JSON.stringify(data).replace(/"/g, '&quot;')})"></i>` : ''}
-                        <i class="fas fa-trash-alt" style="color:red; cursor:pointer;" onclick="handleDelete('${key}', ${JSON.stringify(data).replace(/"/g, '&quot;')})"></i>
-                    </div>
-                </div>`;
-            });
+                        ${mode === 'recycle_bin' ? `<i class="fas fa-undo" style="color:green; cursor:pointer; margin-right:15px;" onclick="restoreData('${key}', ${JSON.stringify(d).replace(/"/g, '&quot;')})"></i>` : ''}
+                        <i class="fas fa-trash-alt" style="color:red; cursor:pointer;" onclick="handleDelete('${key}', ${JSON.stringify(d).replace(/"/g, '&quot;')})"></i>
+                    </div></div>`;
+                });
+            }
+            area.innerHTML = html;
         });
-    }
-
-    function sendAnn() {
-        const sir = document.getElementById('sir-selector').value;
-        const msg = document.getElementById('ann-input').value;
-        const date = document.getElementById('target-date').value || new Date().toISOString().split('T')[0];
-        if(msg.trim()) {
-            db.ref(`chats/${date}`).push({ name: sir, message: msg, time: new Date().toLocaleTimeString() });
-            document.getElementById('ann-input').value = "";
-        }
     }
 
     function handleDelete(key, dataValue) {
         const date = document.getElementById('target-date').value;
-        if(mode === 'recycle_bin') {
-            if(confirm("परमानेंट डिलीट करें?")) db.ref(`${mode}/${date}/${key}`).remove();
+        if (mode === 'recycle_bin') {
+            if (confirm("हमेशा के लिए डिलीट करें?")) { db.ref(`recycle_bin/${date}/${key}`).remove().then(() => loadData()); }
         } else {
-            if(confirm("डिलीट करें? (बिन में जाएगा)")) {
-                db.ref(`recycle_bin/${date}`).push({...dataValue, oldKey: key, oldMode: mode})
-                .then(() => db.ref(`${mode}/${date}/${key}`).remove());
+            if (confirm("डिलीट करें? (रीसायकल बिन में जाएगा)")) {
+                db.ref(`recycle_bin/${date}/${key}`).set({...dataValue, oldMode: mode}).then(() => db.ref(`${mode}/${date}/${key}`).remove()).then(() => loadData());
             }
         }
     }
 
-    function restoreData(binKey, fullData) {
-        const date = document.getElementById('target-date').value;
-        const { oldMode, oldKey, ...cleanData } = fullData;
-        db.ref(`${oldMode}/${date}/${oldKey}`).set(cleanData)
-        .then(() => db.ref(`recycle_bin/${date}/${binKey}`).remove());
+    function restoreData(key, fullData) {
+        const date = document.getElementById('target-date').value; const { oldMode, ...cleanData } = fullData;
+        db.ref(`${oldMode}/${date}/${key}`).set(cleanData).then(() => db.ref(`recycle_bin/${date}/${key}`).remove()).then(() => loadData());
     }
 
-    function switchTab(m, el) {
-        mode = m;
-        document.getElementById('header-title').innerText = el.innerText;
-        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-        el.classList.add('active'); loadData();
+    function sendAnn() {
+        const s = document.getElementById('sir-selector').value; const m = document.getElementById('ann-input').value;
+        const d = document.getElementById('target-date').value || new Date().toISOString().split('T')[0];
+        if(m.trim()) { db.ref(`chats/${d}`).push({ name: s, message: m, time: new Date().toLocaleTimeString() }); document.getElementById('ann-input').value = ""; }
     }
 
+    function autoCleanOldChats() {
+        db.ref('chats').once('value', snap => {
+            const now = new Date(); Object.keys(snap.val() || {}).forEach(dateStr => { if ((now - new Date(dateStr)) / 864e5 > 7) db.ref(`chats/${dateStr}`).remove(); });
+        });
+    }
+
+    function switchTab(m, el) { mode = m; document.getElementById('header-title').innerText = el.innerText; document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); loadData(); }
     function openPassModal() { document.getElementById('passModal').style.display = 'flex'; }
-    function closeModal() { document.getElementById('passModal').style.display = 'none'; }
+    function closePassModal() { document.getElementById('passModal').style.display = 'none'; }
     function updatePass() {
-        const p = document.getElementById('new-password').value;
-        if(p) { localStorage.setItem('adminPass', p); masterPass = p; alert("पासवर्ड बदला!"); closeModal(); }
+        const newP = document.getElementById('new-password').value; if(newP.length < 4) { alert("पासवर्ड कम से कम 4 अक्षर का होना चाहिए!"); return; }
+        localStorage.setItem('adminPass', newP); alert("पासवर्ड सफलतापूर्वक बदल गया! ✅"); closePassModal(); location.reload();
     }
+    function logout() { sessionStorage.clear(); location.reload(); }
 </script>
 </body>
 </html>
